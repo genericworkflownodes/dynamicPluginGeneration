@@ -1,0 +1,4 @@
+setpref org.eclipse.buckminster.pde.targetPlatformPath='@BUCKMINSTER_TARGET_PLATFORM@'
+import '@BUCKMINSTER_JOB_CQUERY@'
+build
+perform -Dtarget.os=* -Dtarget.ws=* -Dtarget.arch=* @UPDATE_SITE_ID@#site.p2

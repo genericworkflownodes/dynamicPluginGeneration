@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rm:rmap xmlns:bc="http://www.eclipse.org/buckminster/Common-1.0" xmlns:rm="http://www.eclipse.org/buckminster/RMap-1.0">
+@RMAP_LOCATOR@
+    <rm:locator pattern="^com\.genericworkflownodes\..+" searchPathRef="genericworkflownodes"/>
+    <rm:locator searchPathRef="KNIME.org" failOnError="false"/>
+    <rm:locator searchPathRef="local-mirror" failOnError="false"/>
+    <rm:searchPath name="KNIME.org">
+        <rm:provider componentTypes="eclipse.feature,osgi.bundle,buckminster" readerType="p2" source="false" mutable="false">
+          <rm:property key="buckminster.source" value="false"/>
+          <rm:property key="buckminster.mutable" value="false"/>
+          <!-- Need to replace the knime version to the one specifically built -->
+          <rm:uri format="http://update.knime.org/analytics-platform/3.6/"/>
+        </rm:provider>
+        <rm:provider componentTypes="eclipse.feature,osgi.bundle,buckminster" resolutionFilter="(useTrunk=true)" readerType="p2" source="false" mutable="false">
+            <rm:property key="buckminster.source" value="false"/>
+            <rm:property key="buckminster.mutable" value="false"/>
+            <rm:uri format="https://jenkins.knime.org/download/trunk/"/>
+        </rm:provider>
+    </rm:searchPath>
+    <rm:searchPath name="genericworkflownodes">
+        <rm:provider componentTypes="buckminster,osgi.bundle,eclipse.feature" readerType="git" mutable="false">
+            <rm:property key="buckminster.mutable" value="false"/>
+            <rm:uri format="{0}/egit,{1}">
+                <bc:propertyRef key="workspace.root"/>
+                <bc:propertyRef key="buckminster.component"/>
+            </rm:uri>
+            <rm:property key="git.remote.uri" value="git://github.com/genericworkflownodes/GenericKnimeNodes.git"/>
+            <rm:property key="git.remote.name" value="GKN"/>
+            <rm:property key="git.auto.fetch" value="true"/>
+        </rm:provider>
+    </rm:searchPath>
+    <rm:searchPath name="local-mirror">
+        <rm:provider componentTypes="eclipse.feature,osgi.bundle,buckminster" readerType="p2" source="false" mutable="false">
+            <rm:property key="buckminster.source" value="false"/>
+            <rm:property key="buckminster.mutable" value="false"/>
+            <rm:uri format="https://mirror.knime.org/eclipse/p2-oxygen"/>
+        </rm:provider>
+    </rm:searchPath>
+@RMAP_SEARCH_PATH@</rm:rmap>

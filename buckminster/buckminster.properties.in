@@ -1,0 +1,4 @@
+buckminster.output.root=@BUCKMINSTER_OUTPUT_ROOT@
+buckminster.temp.root=${buckminster.output.root}/tmp
+qualifier.replacement.*=generator:buildTimestamp
+generator.buildTimestamp.format='v'yyyyMMddHHmm
