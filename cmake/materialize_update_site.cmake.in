@@ -1,0 +1,129 @@
+# ============================================================================
+#                  SeqAn - The Library for Sequence Analysis
+# ============================================================================
+#
+# Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
+# Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of Knut Reinert or the FU Berlin nor the names of
+#       its contributors may be used to endorse or promote products derived
+#       from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+# ============================================================================
+
+set (BUCKMINSTER_TEMPLATE_DIR "@BUCKMINSTER_TEMPLATE_DIR@")
+set (PLUGIN_DIR "@PLUGIN_BUILD_DIR@")
+
+set (UPDATE_SITE_ID "@update_site_id@")
+
+set (BUCKMINSTER_WORKSPACE "@buckminster_workspace@")
+set (BUCKMINSTER_NODE_DIR "@buckminster_workspace@/nodes")
+set (BUCKMINSTER_OUTPUT_ROOT "@buckminster_workspace@/buckminster.output")
+set (BUCKMINSTER_TARGET_PLATFORM "@buckminster_workspace@/tmp/buckminster.targetPlatform")
+set (BUCKMINSTER_JOB_CQUERY "@buckminster_workspace@/job.cquery")
+
+macro (add_rmap_item locator search_path component_base)
+
+    string(REGEX REPLACE "\\." "\\\\." locator_pattern "${component_base}")
+    string(REGEX MATCH "\\.[a-zA-Z0-9_]+\\.$" locator_id "${component_base}")
+    string(REGEX REPLACE "\\." "" locator_id "${locator_id}")
+
+    string (APPEND ${locator}
+        "    <rm:locator pattern=\"^${locator_pattern}.+\" searchPathRef=\"${locator_id}\"/>\n"
+     )
+
+    string( APPEND ${search_path}
+        "    <rm:searchPath name=\"${locator_id}\">\n"
+            "        <rm:provider componentTypes=\"buckminster,osgi.bundle,eclipse.feature\" readerType=\"local\" mutable=\"false\">\n"
+                "            <rm:property key=\"buckminster.mutable\" value=\"false\"/>\n"
+                "            <rm:uri format=\"file:///{0}/nodes/{1}/\">\n"
+                    "                <bc:propertyRef key=\"workspace.root\"/>\n"
+                    "                <bc:propertyRef key=\"buckminster.component\"/>\n"
+                "            </rm:uri>\n"
+            "        </rm:provider>\n"
+        "    </rm:searchPath>\n"
+    )
+
+endmacro (add_rmap_item)
+
+macro (collect_rmap_items locator search_path)
+
+    set (${locator} "")
+    set (${search_path} "")
+
+    file (GLOB NODES
+          RELATIVE ${BUCKMINSTER_NODE_DIR}
+          ${BUCKMINSTER_NODE_DIR}/[!.]*)
+
+    # Scan the plugin dir and add all features.
+    foreach (node ${NODES})
+        string (REGEX MATCH ".feature" is_feature "${node}")
+
+        if (NOT "${is_feature}" STREQUAL "") # Found feature to be included.
+
+            if (NOT EXISTS ${BUCKMINSTER_NODE_DIR}/${node}/feature.xml)
+                message (FATAL_ERROR "Could not find feature.xml in ${BUCKMINSTER_NODE_DIR}/${node}. Is the feature configured correctly?")
+            endif ()
+
+            string(REGEX REPLACE "feature" "" component_base "${node}")
+
+            add_rmap_item(${locator} ${search_path} ${component_base})
+        endif ()  # Register the plugin
+    endforeach ()
+endmacro (collect_rmap_items)
+
+# Clear the workspace before.
+file(REMOVE_RECURSE "${BUCKMINSTER_WORKSPACE}")
+
+file (MAKE_DIRECTORY "${BUCKMINSTER_WORKSPACE}" "${BUCKMINSTER_NODE_DIR}")
+# Check if need to glob the files before?
+file (COPY ${PLUGIN_DIR}/
+      DESTINATION ${BUCKMINSTER_NODE_DIR}
+      FILES_MATCHING PATTERN "*"
+)
+
+file (COPY ${BUCKMINSTER_TEMPLATE_DIR}/buckminster.properties.in
+           ${BUCKMINSTER_TEMPLATE_DIR}/commands.txt.in
+           ${BUCKMINSTER_TEMPLATE_DIR}/component.rmap.in
+           ${BUCKMINSTER_TEMPLATE_DIR}/job.cquery.in
+      DESTINATION ${BUCKMINSTER_WORKSPACE}
+)
+
+# After copying the files we want to collect the rmap items
+collect_rmap_items (RMAP_LOCATOR RMAP_SEARCH_PATH)
+
+# Configure buckminster.properties
+configure_file(${BUCKMINSTER_WORKSPACE}/buckminster.properties.in
+               ${BUCKMINSTER_WORKSPACE}/buckminster.properties @ONLY)
+
+# Configure commands.txt
+configure_file(${BUCKMINSTER_WORKSPACE}/commands.txt.in
+               ${BUCKMINSTER_WORKSPACE}/commands.txt @ONLY)
+
+# Configure component.rmap
+configure_file(${BUCKMINSTER_WORKSPACE}/component.rmap.in
+               ${BUCKMINSTER_WORKSPACE}/component.rmap @ONLY)
+
+# Configure job.cquery
+configure_file(${BUCKMINSTER_WORKSPACE}/job.cquery.in
+               ${BUCKMINSTER_WORKSPACE}/job.cquery @ONLY)

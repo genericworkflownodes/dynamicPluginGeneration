@@ -1,0 +1,118 @@
+# ============================================================================
+#                  SeqAn - The Library for Sequence Analysis
+# ============================================================================
+#
+# Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
+# Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of Knut Reinert or the FU Berlin nor the names of
+#       its contributors may be used to endorse or promote products derived
+#       from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+# ============================================================================
+
+set (PLUGIN_DIR "@PLUGIN_BUILD_DIR@")
+
+set (FEATURE_ID "@feature_id@")
+set (FEATURE_VERSION "@FEATURE_VERSION_MAJOR@.@FEATURE_VERSION_MINOR@.@FEATURE_VERSION_PATCH@")
+set (FEATURE_LABEL "@feature_label@")
+
+set (FEATURE_DESCRIPTION "@feature_description@")
+set (FEATURE_COPYRIGHT "@feature_copyright@")
+set (FEATURE_LICENSE "@feature_license@")
+
+macro (feature_add_host_plugin plugin_list plugin)
+
+    string (APPEND ${plugin_list}
+        "<plugin\n"
+         "\tid=\"${plugin}\"\n"
+         "\tdownload-size=\"0\"\n"
+         "\tinstall-size=\"0\"\n"
+         "\tversion=\"0.0.0\"\n"
+         "\tunpack=\"false\"/>\n\n"
+     )
+endmacro (feature_add_host_plugin)
+
+macro (feature_add_fragment plugin_list fragment)
+
+    string (REGEX MATCH "(win32|macosx|linux)" fragment_os "${fragment}")
+    string (REGEX MATCH "(x86|x86_64)$" fragment_arch "${fragment}")
+
+    string (APPEND ${plugin_list}
+        "<plugin\n"
+            "\tid=\"${fragment}\"\n"
+            "\tos=\"${fragment_os}\"\n"
+            "\tarch=\"${fragment_arch}\"\n"
+            "\tdownload-size=\"0\"\n"
+            "\tinstall-size=\"0\"\n"
+            "\tversion=\"0.0.0\""
+            "\tfragment=\"true\"/>\n\n"
+        )
+endmacro (feature_add_fragment)
+
+macro (collect_feature_plugins output)
+
+    set (${output} "")
+
+    file (GLOB PLUGINS
+          RELATIVE ${PLUGIN_DIR}
+          ${PLUGIN_DIR}/[!.]*)
+
+    # Scan the plugin dir and add all plugins.
+    set (host_plugins "")
+    foreach (plugin ${PLUGINS})
+
+        string (REGEX MATCH "(win32|macosx|linux)" is_fragment "${plugin}")
+
+        if (NOT "${is_fragment}" STREQUAL "") # Register the fragment for the host plugin
+            # Extract the base plugin component
+            string (REGEX REPLACE ".(x86|x86_64)$" "" fragment_host_plugin "${plugin}")
+            string (REGEX REPLACE ".(win32|macosx|linux)" "" fragment_host_plugin "${fragment_host_plugin}")
+
+            list (APPEND ${fragment_host_plugin}_fragments "${plugin}")
+        else ()  # Register the plugin
+            if (EXISTS ${PLUGIN_DIR}/${plugin}/plugin.xml)
+                list (APPEND host_plugins "${plugin}")
+            endif ()
+        endif ()
+
+    endforeach ()
+
+    foreach (plugin ${host_plugins})
+        feature_add_host_plugin(${output} ${plugin})
+        foreach(fragment ${${plugin}_fragments})
+            feature_add_fragment(${output} ${fragment})
+        endforeach ()
+    endforeach ()
+    message (STATUS "The plugin_list: ${feature_plugin_list}")
+endmacro (collect_feature_plugins)
+
+collect_feature_plugins(FEATURE_PLUGIN_LIST)
+
+# Configure feature.xml
+configure_file(${PLUGIN_DIR}/${FEATURE_ID}/feature.xml
+               ${PLUGIN_DIR}/${FEATURE_ID}/feature.xml @ONLY)
+
+# Configure .project
+configure_file(${PLUGIN_DIR}/${FEATURE_ID}/.project
+               ${PLUGIN_DIR}/${FEATURE_ID}/.project @ONLY)
