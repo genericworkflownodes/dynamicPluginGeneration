@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?eclipse version="3.4"?>
+
+<plugin>
+   <extension
+         point="com.genericworkflownodes.knime.dynamic.VersionedNodeSetFactory">
+         <versionednodesetfactory
+             class="@PLUGIN_DOMAIN@.@PLUGIN_NAME@.GeneratedNodeSetFactory">
+         </versionednodesetfactory>
+   </extension>
+   <extension point="org.knime.workbench.repository.categories">
+      <category
+            icon="icons/@PLUGIN_ICON@"
+            level-id="@PLUGIN_CATEGORY@"
+            locked="true"
+            name="@PLUGIN_CATEGORY_NAME@"
+            path="/community">
+      </category>
+   </extension>
+   <extension point="org.knime.base.filehandling.mimetypes">
+    @PLUGIN_MIME_TYPES@
+   </extension>
+</plugin>

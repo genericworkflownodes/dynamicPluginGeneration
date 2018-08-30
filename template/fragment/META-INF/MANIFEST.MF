@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: @PLUGIN_NAME@
+Bundle-SymbolicName: @PLUGIN_DOMAIN@.@PLUGIN_NAME@.@OSGI_OS@.@OSGI_ARCH@;singleton:=true
+Bundle-Version: @PLUGIN_VERSION@
+Bundle-Vendor: @PLUGIN_VENDOR@
+Fragment-Host: @PLUGIN_DOMAIN@.@PLUGIN_NAME@;bundle-version="@PLUGIN_VERSION@"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Eclipse-PlatformFilter: (& (osgi.arch=@OSGI_ARCH@) (osgi.os=@OSGI_OS@))

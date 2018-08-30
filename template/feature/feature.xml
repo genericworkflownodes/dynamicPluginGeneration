@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="@FEATURE_ID@"
+      label="@FEATURE_LABEL@"
+      version="@FEATURE_VERSION@.qualifier">
+
+   <description>
+       @FEATURE_DESCRIPTION@
+   </description>
+
+   <copyright>
+       @FEATURE_COPYRIGHT@
+   </copyright>
+
+   <license>
+       @FEATURE_LICENSE@
+   </license>
+
+    @FEATURE_PLUGIN_LIST@
+
+</feature>
