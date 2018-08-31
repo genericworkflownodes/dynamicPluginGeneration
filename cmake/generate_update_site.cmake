@@ -76,6 +76,11 @@ macro (add_update_site name id)
 
     get_property (REGISTERED_FEATURES GLOBAL PROPERTY FEATURE_GENERATION_ALL_FEATURES)
 
+    # Workspace
+    set (buckminster_workspace "${PROJECT_BINARY_DIR}/vendor/workspace")
+    configure_file(${PLUGIN_CMAKE_DIR}/materialize_update_site.cmake.in ${PLUGIN_SCRIPT_DIR}/materialize_update_site_${update_site_id}.cmake @ONLY)
+
+    #
     add_custom_command(
         OUTPUT ${PLUGIN_BUILD_DIR}/${id}/feature.xml
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEMPLATE_DIR}/${UPDATE_SITE_TEMPLATE} ${PLUGIN_BUILD_DIR}/${id}
@@ -83,37 +88,25 @@ macro (add_update_site name id)
         # COMMAND ${CMAKE_COMMAND} -E rename ${PLUGIN_BUILD_DIR}/fragment ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
         # Execute the feature cmake script
         COMMAND ${CMAKE_COMMAND} -P ${PLUGIN_SCRIPT_DIR}/build_update_site_${id}.cmake
+        COMMAND ${CMAKE_COMMAND} -P ${PLUGIN_SCRIPT_DIR}/materialize_update_site_${update_site_id}.cmake
         DEPENDS ${REGISTERED_FEATURES}
         COMMENT "${name}: Configuring update site."
         VERBATIM
     )
 
-    ExternalProject_Get_Property(director_project PREFIX)
-    set (vendor_dir "${PREFIX}/..")
-    message (STATUS "The output prefix: ${vendor_dir}")
-
-    set (buckminster_workspace "${PROJECT_BINARY_DIR}/${PREFIX}/../workspace")
-
-    configure_file(${PLUGIN_CMAKE_DIR}/materialize_update_site.cmake.in ${PLUGIN_SCRIPT_DIR}/materialize_update_site_${update_site_id}.cmake @ONLY)
-
     add_custom_target(
         ${name}_update_site ALL
-        COMMAND ${CMAKE_COMMAND} -P ${PLUGIN_SCRIPT_DIR}/materialize_update_site_${update_site_id}.cmake
+        COMMAND ${buckminster_workspace}/../bucky/buckminster -data . -P buckminster.properties -S commands.txt | true
+        COMMAND ${buckminster_workspace}/../bucky/buckminster -data . -P buckminster.properties -S commands.txt #NOTE: At the moment we need to execute it twice.
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/site
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${buckminster_workspace}/buckminster.output/${update_site_id}_${UPDATE_SITE_VERSION_MAJOR}.${UPDATE_SITE_VERSION_MINOR}.${UPDATE_SITE_VERSION_PATCH}-eclipse.feature/site.p2 ${PROJECT_BINARY_DIR}/site
         DEPENDS ${PLUGIN_BUILD_DIR}/${id}/feature.xml
                 director_project-build
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-        COMMENT "${name}: Generating update site."
+        WORKING_DIRECTORY ${buckminster_workspace}
+        COMMENT "${name}: Building update site."
         VERBATIM
     )
 
-    ExternalProject_Get_Property(director_project PREFIX)
-    set (vendor_dir "${PREFIX}/..")
-    message (STATUS "The output prefix: ${vendor_dir}")
- #    get_property(TEST_COVERAGE_ALL_TESTS GLOBAL PROPERTY TEST_COVERAGE_ALL_TESTS)
- # add_custom_command (
- #     OUTPUT ${PROJECT_BINARY_DIR}/seqan3_coverage
- #     DEPENDS ${TEST_COVERAGE_ALL_TESTS}
- #     APPEND
     unset (update_site_id)
     unset (update_site_label)
 endmacro (add_update_site)
@@ -123,14 +116,14 @@ macro (require_director)
     include (ExternalProject)
     ExternalProject_Add (
         director_project
-        PREFIX "vendor2/director"
+        PREFIX "vendor/director"
         URL "https://github.com/genericworkflownodes/dynamicPluginGeneration/raw/master/buckminster/director_latest.zip"
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND ${PROJECT_BINARY_DIR}/vendor2/director/src/director_project/director
+        BUILD_COMMAND ${PROJECT_BINARY_DIR}/vendor/director/src/director_project/director
                        -r "http://download.eclipse.org/tools/buckminster/headless-4.4"
                        -r "http://ftp-stud.fht-esslingen.de/pub/Mirrors/eclipse/releases/mars"
                        -r "http://update.knime.org/build/3.1"
-                       -d "${PROJECT_BINARY_DIR}/vendor2/bucky"
+                       -d "${PROJECT_BINARY_DIR}/vendor/bucky"
                        -p "Buckminster"
                        -i "org.knime.features.build.feature.group"
                        -i "org.eclipse.buckminster.cmdline.product"
