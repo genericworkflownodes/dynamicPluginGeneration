@@ -31,7 +31,7 @@
 # DAMAGE.
 # ============================================================================
 
-set (PLUGIN_DIR "@PLUGIN_BUILD_DIR@")
+set (PLUGIN_DIR "@plugin_build_dir@")
 
 set (UPDATE_SITE_ID "@update_site_id@")
 set (UPDATE_SITE_VERSION "@UPDATE_SITE_VERSION_MAJOR@.@UPDATE_SITE_VERSION_MINOR@.@UPDATE_SITE_VERSION_PATCH@")

@@ -72,42 +72,44 @@ macro (read_mimetypes mime_type_file target_xml)
 endmacro (read_mimetypes)
 
 # Holds all target's defined by seqan3_test
-set_property (GLOBAL PROPERTY PLUGIN_GENERATION_ALL_PLUGINS "")
+set_property (GLOBAL PROPERTY feature_generation_all_plugins "")
 
 # Adds a plugin target for the specified target name.
-macro (add_plugin plugin_src_dir target)
+macro (add_plugin plugin_name)
 
-    # set (PLUGIN_BUILD_DIR "${PROJECT_BINARY_DIR}/plugins")
-    # set (PLUGIN_SCRIPT_DIR "${PROJECT_BINARY_DIR}/scripts")
+    set (target "${plugin_name}")
+    # set (plugin_build_dir "${PROJECT_BINARY_DIR}/plugins")
+    # set (plugin_script_dir "${PROJECT_BINARY_DIR}/scripts")
 
     message (STATUS "Register plugin ${target}")
-    if (IS_DIRECTORY ${plugin_src_dir}/${target})
+    if (IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
         # First extract the mimetypes from the plugin.
-        read_mimetypes(${plugin_src_dir}/${target}/mime.types mimetype_xml)
-
-        # Create a plugin cmake file for the specific target.
-        configure_file(${PLUGIN_CMAKE_DIR}/build_plugin.cmake.in ${PLUGIN_SCRIPT_DIR}/build_plugin_${target}.cmake @ONLY)
+        read_mimetypes(${CMAKE_CURRENT_SOURCE_DIR}/mime.types mimetype_xml)
 
         string (REPLACE "." "/" plugin_src_domain ${PLUGIN_DOMAIN})
         message (STATUS "plugin_src_domain: ${plugin_src_domain}")
+
+        # Create a plugin cmake file for the specific target.
+        configure_file(${plugin_cmake_dir}/build_plugin.cmake.in ${plugin_script_dir}/build_plugin_${target}.cmake @ONLY)
+
         # Copies the template plugin to the build dir and adapts all naming changes.
         add_custom_command (
-            OUTPUT ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}
+            OUTPUT ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}
             # Copy the plugin template
-            COMMAND ${CMAKE_COMMAND} -E copy_directory  ${TEMPLATE_DIR}/${PLUGIN_TEMPLATE} ${PLUGIN_BUILD_DIR}/${PLUGIN_TEMPLATE}
+            COMMAND ${CMAKE_COMMAND} -E copy_directory  ${template_dir}/${plugin_template} ${plugin_build_dir}/${plugin_template}
             # Rename the base directory and copy the source classes.
-            COMMAND ${CMAKE_COMMAND} -E rename ${PLUGIN_BUILD_DIR}/plugin ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/${plugin_src_domain}/${target}
-            COMMAND ${CMAKE_COMMAND} -E copy ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/GeneratedNodeBundleActivator.java ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/${plugin_src_domain}/${target}/
-            COMMAND ${CMAKE_COMMAND} -E copy ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/GeneratedNodeFactory.java ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/${plugin_src_domain}/${target}/
-            COMMAND ${CMAKE_COMMAND} -E copy ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/GeneratedNodeSetFactory.java ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/${plugin_src_domain}/${target}/
-            COMMAND ${CMAKE_COMMAND} -E copy ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/plugin.properties ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/${plugin_src_domain}/${target}/
+            COMMAND ${CMAKE_COMMAND} -E rename ${plugin_build_dir}/plugin ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/${plugin_src_domain}/${target}
+            COMMAND ${CMAKE_COMMAND} -E copy ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/GeneratedNodeBundleActivator.java ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/${plugin_src_domain}/${target}/
+            COMMAND ${CMAKE_COMMAND} -E copy ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/GeneratedNodeFactory.java ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/${plugin_src_domain}/${target}/
+            COMMAND ${CMAKE_COMMAND} -E copy ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/GeneratedNodeSetFactory.java ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/${plugin_src_domain}/${target}/
+            COMMAND ${CMAKE_COMMAND} -E copy ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/plugin.properties ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/${plugin_src_domain}/${target}/
             # Delete the source classes.
-            COMMAND ${CMAKE_COMMAND} -E remove ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/GeneratedNodeBundleActivator.java
-            COMMAND ${CMAKE_COMMAND} -E remove ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/GeneratedNodeFactory.java
-            COMMAND ${CMAKE_COMMAND} -E remove ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/GeneratedNodeSetFactory.java
-            COMMAND ${CMAKE_COMMAND} -E remove ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/src/plugin.properties
+            COMMAND ${CMAKE_COMMAND} -E remove ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/GeneratedNodeBundleActivator.java
+            COMMAND ${CMAKE_COMMAND} -E remove ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/GeneratedNodeFactory.java
+            COMMAND ${CMAKE_COMMAND} -E remove ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/GeneratedNodeSetFactory.java
+            COMMAND ${CMAKE_COMMAND} -E remove ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/src/plugin.properties
             # BYPRODUCTS seqan3_coverage.baseline seqan3_coverage.captured seqan3_coverage.total
 
             WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -116,17 +118,18 @@ macro (add_plugin plugin_src_dir target)
 
         # Source the generated plugin cmake file which is used to replace the content in the template.
         add_custom_command(
-            OUTPUT ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/plugin.xml
-            COMMAND ${CMAKE_COMMAND} -P ${PLUGIN_SCRIPT_DIR}/build_plugin_${target}.cmake
-            DEPENDS ${PLUGIN_SCRIPT_DIR}/build_plugin_${target}.cmake
-                    ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}
+            OUTPUT ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/plugin.xml
+            COMMAND ${CMAKE_COMMAND} -P ${plugin_script_dir}/build_plugin_${target}.cmake
+            DEPENDS ${plugin_script_dir}/build_plugin_${target}.cmake
+                    ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}
+            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
             COMMENT "${target}: Adapting plugin specific variables"
             VERBATIM)
 
         # Find all ctd files in the current tool directory.
         file (GLOB cdt_files
-              RELATIVE ${plugin_src_dir}/${target}
-              ${plugin_src_dir}/${target}/*.ctd)
+              RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+              ${CMAKE_CURRENT_SOURCE_DIR}/*.ctd)
 
         # The following variable lists all fragment platforms that need to be generated for
         # the current plugin.
@@ -139,8 +142,8 @@ macro (add_plugin plugin_src_dir target)
 
             # Extract all platform names depending on the binary provided.
             file (GLOB_RECURSE tool_fragments
-                  RELATIVE ${plugin_src_dir}/${target}
-                  ${plugin_src_dir}/${target}/*/${tool_name}*)
+                  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+                  ${CMAKE_CURRENT_SOURCE_DIR}/*/${tool_name}*)
 
             # Pass over the list of detected platforms (converted to fragments in plugin generation step)
             foreach (fragment ${tool_fragments})
@@ -184,28 +187,29 @@ macro (add_plugin plugin_src_dir target)
                 set(p2inf "${p2inf}org.eclipse.equinox.p2.touchpoint.eclipse.chmod(targetDir:@artifact,targetFile:payload/bin/${bin},permissions:755);")
             endforeach ()
             # Configure fragment specific cmake file.
-            configure_file(${PLUGIN_CMAKE_DIR}/build_plugin_fragment.cmake.in ${PLUGIN_SCRIPT_DIR}/build_plugin_fragment_${target}_${osgi_os}_${osgi_arch}.cmake @ONLY)
+            configure_file(${plugin_cmake_dir}/build_plugin_fragment.cmake.in ${plugin_script_dir}/build_plugin_fragment_${target}_${osgi_os}_${osgi_arch}.cmake @ONLY)
 
             # Copy the fragment template and replace the fragment specific names.
             add_custom_command (
-                OUTPUT ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
+                OUTPUT ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
                 # Copy the plugin template
-                COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEMPLATE_DIR}/${FRAGMENT_TEMPLATE} ${PLUGIN_BUILD_DIR}/${FRAGMENT_TEMPLATE}
+                COMMAND ${CMAKE_COMMAND} -E copy_directory ${template_dir}/${FRAGMENT_TEMPLATE} ${plugin_build_dir}/${FRAGMENT_TEMPLATE}
                 # Rename the fragment directory.
-                COMMAND ${CMAKE_COMMAND} -E rename ${PLUGIN_BUILD_DIR}/fragment ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
+                COMMAND ${CMAKE_COMMAND} -E rename ${plugin_build_dir}/fragment ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
                 # BYPRODUCTS seqan3_coverage.baseline seqan3_coverage.captured seqan3_coverage.total
-                DEPENDS ${PLUGIN_SCRIPT_DIR}/build_plugin_fragment_${target}_${osgi_os}_${osgi_arch}.cmake
+                DEPENDS ${plugin_script_dir}/build_plugin_fragment_${target}_${osgi_os}_${osgi_arch}.cmake
                 WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                 COMMENT "${target}-${platform}: Generating fragment template directory."
                 VERBATIM)
 
             # Configure the fragment settings.
             add_custom_command(
-                OUTPUT ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/plugin.xml
-                COMMAND ${CMAKE_COMMAND} -P ${PLUGIN_SCRIPT_DIR}/build_plugin_fragment_${target}_${osgi_os}_${osgi_arch}.cmake
-                DEPENDS ${PLUGIN_SCRIPT_DIR}/build_plugin_fragment_${target}_${osgi_os}_${osgi_arch}.cmake
-                        ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
+                OUTPUT ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/plugin.xml
+                COMMAND ${CMAKE_COMMAND} -P ${plugin_script_dir}/build_plugin_fragment_${target}_${osgi_os}_${osgi_arch}.cmake
+                DEPENDS ${plugin_script_dir}/build_plugin_fragment_${target}_${osgi_os}_${osgi_arch}.cmake
+                        ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
                 COMMENT "${target}-${platform}: Configuring input files"
+                WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                 APPEND
                 VERBATIM)
 
@@ -216,12 +220,13 @@ macro (add_plugin plugin_src_dir target)
                 get_filename_component (ctd_name ${bin} NAME_WE)
 
                 add_custom_command(
-                    OUTPUT ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/plugin.xml
-                    COMMAND ${CMAKE_COMMAND} -E copy ${plugin_src_dir}/${target}/${ctd_name}.ctd ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}/payload/descriptors/${ctd_name}.ctd
-                    COMMAND ${CMAKE_COMMAND} -E copy ${plugin_src_dir}/${target}/${platform}/${bin} ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}/payload/bin/${bin}
-                    DEPENDS ${plugin_src_dir}/${target}/${ctd_name}.ctd
-                            ${plugin_src_dir}/${target}/${platform}/${bin}
+                    OUTPUT ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/plugin.xml
+                    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${ctd_name}.ctd ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}/payload/descriptors/${ctd_name}.ctd
+                    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${platform}/${bin} ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}/payload/bin/${bin}
+                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${ctd_name}.ctd
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${platform}/${bin}
                     COMMENT "${target}-${platform}-${bin}: Copying files to payload directory of fragment."
+                    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                     APPEND
                     VERBATIM)
             endforeach ()
@@ -231,16 +236,17 @@ macro (add_plugin plugin_src_dir target)
         # Register target for tool
         add_custom_target(
             ${target}_plugin ALL
-            DEPENDS ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}/plugin.xml
+            DEPENDS ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/plugin.xml
             WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
             COMMENT "${target}: Generating plugin."
             VERBATIM)
 
-        set_property(GLOBAL APPEND PROPERTY PLUGIN_GENERATION_ALL_PLUGINS ${target}_plugin)
+        set_property(GLOBAL APPEND PROPERTY feature_generation_all_plugins ${target}_plugin)
     else()
         MESSAGE (STATUS "The tool directory: ${target} is not a directory.")
     endif ()
 
-    # unset (PLUGIN_BUILD_DIR)
-    # unset (PLUGIN_SCRIPT_DIR)
+    # unset (plugin_build_dir)
+    # unset (plugin_script_dir)
+    unset (${target})
 endmacro (add_plugin)

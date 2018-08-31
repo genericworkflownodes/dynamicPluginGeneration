@@ -31,8 +31,8 @@
 # DAMAGE.
 # ============================================================================
 
-set (BUCKMINSTER_TEMPLATE_DIR "@BUCKMINSTER_TEMPLATE_DIR@")
-set (PLUGIN_DIR "@PLUGIN_BUILD_DIR@")
+set (BUCKMINSTER_template_dir "@BUCKMINSTER_template_dir@")
+set (PLUGIN_DIR "@plugin_build_dir@")
 
 set (UPDATE_SITE_ID "@update_site_id@")
 
@@ -103,10 +103,10 @@ file (COPY ${PLUGIN_DIR}/
       FILES_MATCHING PATTERN "*"
 )
 
-file (COPY ${BUCKMINSTER_TEMPLATE_DIR}/buckminster.properties.in
-           ${BUCKMINSTER_TEMPLATE_DIR}/commands.txt.in
-           ${BUCKMINSTER_TEMPLATE_DIR}/component.rmap.in
-           ${BUCKMINSTER_TEMPLATE_DIR}/job.cquery.in
+file (COPY ${BUCKMINSTER_template_dir}/buckminster.properties.in
+           ${BUCKMINSTER_template_dir}/commands.txt.in
+           ${BUCKMINSTER_template_dir}/component.rmap.in
+           ${BUCKMINSTER_template_dir}/job.cquery.in
       DESTINATION ${BUCKMINSTER_WORKSPACE}
 )
 

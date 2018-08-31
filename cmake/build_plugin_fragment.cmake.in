@@ -33,7 +33,7 @@
 
 include (scripts/build_plugin_@target@.cmake)
 
-set (FRAGMENT_DIR "@PLUGIN_BUILD_DIR@/@PLUGIN_DOMAIN@.@target@.@osgi_os@.@osgi_arch@")
+set (FRAGMENT_DIR "@plugin_build_dir@/@PLUGIN_DOMAIN@.@target@.@osgi_os@.@osgi_arch@")
 set (OSGI_ARCH "@osgi_arch@")
 set (OSGI_OS "@osgi_os@")
 set (P2INF "@p2inf@")

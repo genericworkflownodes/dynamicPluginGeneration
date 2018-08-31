@@ -31,7 +31,7 @@
 # DAMAGE.
 # ============================================================================
 
-set (PLUGIN_DIR "@PLUGIN_BUILD_DIR@")
+set (PLUGIN_DIR "@plugin_build_dir@")
 
 set (FEATURE_ID "@feature_id@")
 set (FEATURE_VERSION "@FEATURE_VERSION_MAJOR@.@FEATURE_VERSION_MINOR@.@FEATURE_VERSION_PATCH@")
@@ -65,7 +65,7 @@ macro (feature_add_fragment plugin_list fragment)
             "\tarch=\"${fragment_arch}\"\n"
             "\tdownload-size=\"0\"\n"
             "\tinstall-size=\"0\"\n"
-            "\tversion=\"0.0.0\""
+            "\tversion=\"0.0.0\"\n"
             "\tfragment=\"true\"/>\n\n"
         )
 endmacro (feature_add_fragment)
@@ -104,7 +104,6 @@ macro (collect_feature_plugins output)
             feature_add_fragment(${output} ${fragment})
         endforeach ()
     endforeach ()
-    message (STATUS "The plugin_list: ${feature_plugin_list}")
 endmacro (collect_feature_plugins)
 
 collect_feature_plugins(FEATURE_PLUGIN_LIST)

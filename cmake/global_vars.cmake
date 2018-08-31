@@ -31,32 +31,47 @@
 # DAMAGE.
 # ============================================================================
 
-set (PLUGIN_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+set (plugin_cmake_dir "${CMAKE_CURRENT_LIST_DIR}")
 # Set the base template directory relative to this file directory.
-set (TEMPLATE_DIR "${PLUGIN_CMAKE_DIR}/../template")
-set (BUCKMINSTER_TEMPLATE_DIR "${PLUGIN_CMAKE_DIR}/../buckminster")
-set (PLUGIN_TEMPLATE "plugin")
+set (template_dir "${plugin_cmake_dir}/../template")
+set (BUCKMINSTER_template_dir "${plugin_cmake_dir}/../buckminster")
+set (plugin_template "plugin")
 set (FRAGMENT_TEMPLATE "fragment")
-set (FEATURE_TEMPLATE "feature")
-set (UPDATE_SITE_TEMPLATE "update_site")
+set (feature_template "feature")
+set (update_site_template "update_site")
 
-if (NOT IS_DIRECTORY ${TEMPLATE_DIR}/${PLUGIN_TEMPLATE})
-    message (ERROR "Could not find template plugin directory in ${TEMPLATE_DIR}")
+if (NOT IS_DIRECTORY ${template_dir}/${plugin_template})
+    message (ERROR "Could not find template plugin directory in ${template_dir}")
 endif ()
 
-if (NOT IS_DIRECTORY ${TEMPLATE_DIR}/${FRAGMENT_TEMPLATE})
-    message (ERROR "Could not find template fragment directory in ${TEMPLATE_DIR}.")
+if (NOT IS_DIRECTORY ${template_dir}/${FRAGMENT_TEMPLATE})
+    message (ERROR "Could not find template fragment directory in ${template_dir}.")
 endif ()
 
-if (NOT IS_DIRECTORY ${TEMPLATE_DIR}/${FEATURE_TEMPLATE})
-    message (ERROR "Could not find template feature directory in ${TEMPLATE_DIR}.")
+if (NOT IS_DIRECTORY ${template_dir}/${feature_template})
+    message (ERROR "Could not find template feature directory in ${template_dir}.")
 endif ()
 
-if (NOT IS_DIRECTORY ${TEMPLATE_DIR}/${UPDATE_SITE_TEMPLATE})
-    message (ERROR "Could not find template update site directory in ${TEMPLATE_DIR}.")
+if (NOT IS_DIRECTORY ${template_dir}/${update_site_template})
+    message (ERROR "Could not find template update site directory in ${template_dir}.")
 endif ()
 
-message (STATUS "TEMPLATE_DIR: ${TEMPLATE_DIR}")
+message (STATUS "template_dir: ${template_dir}")
 
-set (PLUGIN_BUILD_DIR "${PROJECT_BINARY_DIR}/plugins")
-set (PLUGIN_SCRIPT_DIR "${PROJECT_BINARY_DIR}/scripts")
+set (plugin_build_dir "${PROJECT_BINARY_DIR}/plugins")
+set (plugin_script_dir "${PROJECT_BINARY_DIR}/scripts")
+
+macro (add_subdirectories)
+    file (GLOB ENTRIES
+          RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+          ${CMAKE_CURRENT_SOURCE_DIR}/[!.]*)
+
+    foreach (ENTRY ${ENTRIES})
+        if (IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${ENTRY})
+            if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${ENTRY}/CMakeLists.txt)
+                add_subdirectory (${ENTRY})
+            endif ()
+        endif ()
+    endforeach ()
+    unset (ENTRIES)
+endmacro ()
