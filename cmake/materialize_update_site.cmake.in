@@ -96,6 +96,7 @@ endmacro (collect_rmap_items)
 file(REMOVE_RECURSE "${BUCKMINSTER_WORKSPACE}")
 
 file (MAKE_DIRECTORY "${BUCKMINSTER_WORKSPACE}" "${BUCKMINSTER_NODE_DIR}")
+
 # Check if need to glob the files before?
 file (COPY ${PLUGIN_DIR}/
       DESTINATION ${BUCKMINSTER_NODE_DIR}

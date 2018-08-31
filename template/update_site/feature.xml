@@ -16,6 +16,10 @@
       [Enter License Description here.]
    </license>
 
+   <includes
+       id="com.genericworkflownodes.knime.feature"
+       version="0.0.0"/>
+
    @UPDATE_SITE_INCLUDES@
 
 </feature>
