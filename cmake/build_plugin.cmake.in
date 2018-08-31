@@ -31,12 +31,13 @@
 # DAMAGE.
 # ============================================================================
 
-set (PLUGIN_DIR "@PLUGIN_BUILD_DIR@/@PLUGIN_DOMAIN@.@target@")
+set (PLUGIN_DIR "@plugin_build_dir@/@PLUGIN_DOMAIN@.@target@")
 set (PLUGIN_VERSION "@PLUGIN_VERSION_MAJOR@.@PLUGIN_VERSION_MINOR@.@PLUGIN_VERSION_PATCH@")
 set (PLUGIN_QUALIFIER "qualifier")
 set (PLUGIN_CATEGORY "@PLUGIN_CATEGORY@")
 set (PLUGIN_CATEGORY_NAME "@PLUGIN_CATEGORY_NAME@")
 set (PLUGIN_DOMAIN "@PLUGIN_DOMAIN@")
+set (PLUGIN_SRC_BASE_DIR "@plugin_src_domain@")
 set (PLUGIN_NAME "@target@")
 set (PLUGIN_ID "@PLUGIN_DOMAIN@.@target@")
 set (PLUGIN_ICON "console_view.png")
@@ -51,16 +52,16 @@ configure_file(${PLUGIN_DIR}/META-INF/MANIFEST.MF
                ${PLUGIN_DIR}/META-INF/MANIFEST.MF @ONLY)
 
 # Configure GeneratedNodeBundleActivator
-configure_file(${PLUGIN_DIR}/src/de/ngstoolbox/${PLUGIN_NAME}/GeneratedNodeBundleActivator.java
-               ${PLUGIN_DIR}/src/de/ngstoolbox/${PLUGIN_NAME}/GeneratedNodeBundleActivator.java @ONLY)
+configure_file(${PLUGIN_DIR}/src/${PLUGIN_SRC_BASE_DIR}/${PLUGIN_NAME}/GeneratedNodeBundleActivator.java
+               ${PLUGIN_DIR}/src/${PLUGIN_SRC_BASE_DIR}/${PLUGIN_NAME}/GeneratedNodeBundleActivator.java @ONLY)
 
 # Configure GeneratedNodeFactory
-configure_file(${PLUGIN_DIR}/src/de/ngstoolbox/${PLUGIN_NAME}/GeneratedNodeFactory.java
-               ${PLUGIN_DIR}/src/de/ngstoolbox/${PLUGIN_NAME}/GeneratedNodeFactory.java @ONLY)
+configure_file(${PLUGIN_DIR}/src/${PLUGIN_SRC_BASE_DIR}/${PLUGIN_NAME}/GeneratedNodeFactory.java
+               ${PLUGIN_DIR}/src/${PLUGIN_SRC_BASE_DIR}/${PLUGIN_NAME}/GeneratedNodeFactory.java @ONLY)
 
 # Configure GeneratedNodeSetFactory
-configure_file(${PLUGIN_DIR}/src/de/ngstoolbox/${PLUGIN_NAME}/GeneratedNodeSetFactory.java
-               ${PLUGIN_DIR}/src/de/ngstoolbox/${PLUGIN_NAME}/GeneratedNodeSetFactory.java @ONLY)
+configure_file(${PLUGIN_DIR}/src/${PLUGIN_SRC_BASE_DIR}/${PLUGIN_NAME}/GeneratedNodeSetFactory.java
+               ${PLUGIN_DIR}/src/${PLUGIN_SRC_BASE_DIR}/${PLUGIN_NAME}/GeneratedNodeSetFactory.java @ONLY)
 
 # Configure plugin.xml
 configure_file(${PLUGIN_DIR}/plugin.xml

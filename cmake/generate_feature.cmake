@@ -55,25 +55,25 @@ macro (add_feature name id description copyright license)
     set (feature_license "${license_quoted}")
 
     # Create a plugin cmake file for the specific target.
-    configure_file(${PLUGIN_CMAKE_DIR}/build_feature.cmake.in ${PLUGIN_SCRIPT_DIR}/build_feature_${id}.cmake @ONLY)
+    configure_file(${plugin_cmake_dir}/build_feature.cmake.in ${plugin_script_dir}/build_feature_${id}.cmake @ONLY)
 
-    get_property (REGISTERED_PLUGINS GLOBAL PROPERTY PLUGIN_GENERATION_ALL_PLUGINS)
+    get_property (registered_plugins GLOBAL PROPERTY feature_generation_all_plugins)
 
     add_custom_command(
-        OUTPUT ${PLUGIN_BUILD_DIR}/${id}/feature.xml
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEMPLATE_DIR}/${FEATURE_TEMPLATE} ${PLUGIN_BUILD_DIR}/${id}
+        OUTPUT ${plugin_build_dir}/${id}/feature.xml
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${template_dir}/${feature_template} ${plugin_build_dir}/${id}
         # # Rename the fragment directory.
-        # COMMAND ${CMAKE_COMMAND} -E rename ${PLUGIN_BUILD_DIR}/fragment ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
+        # COMMAND ${CMAKE_COMMAND} -E rename ${plugin_build_dir}/fragment ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
         # Execute the feature cmake script
-        COMMAND ${CMAKE_COMMAND} -P ${PLUGIN_SCRIPT_DIR}/build_feature_${id}.cmake
-        DEPENDS ${REGISTERED_PLUGINS}
+        COMMAND ${CMAKE_COMMAND} -P ${plugin_script_dir}/build_feature_${id}.cmake
+        DEPENDS ${registered_plugins}
         COMMENT "${name}: Configuring feature."
         VERBATIM
     )
 
     add_custom_target(
         ${name}_feature ALL
-        DEPENDS ${PLUGIN_BUILD_DIR}/${id}/feature.xml
+        DEPENDS ${plugin_build_dir}/${id}/feature.xml
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         COMMENT "${name}: Generating feature."
         VERBATIM
@@ -91,4 +91,7 @@ macro (add_feature name id description copyright license)
     unset (feature_description)
     unset (feature_copyright)
     unset (feature_license)
+    unset (registered_plugins)
+    # Clear the feature plugin list to load another feature.
+    set_property(GLOBAL PROPERTY feature_generation_all_plugins "")
 endmacro (add_feature)

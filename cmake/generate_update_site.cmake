@@ -46,8 +46,8 @@ macro (collect_update_site_includes output)
     set (${output} "")
 
     file (GLOB PLUGINS
-          RELATIVE ${PLUGIN_BUILD_DIR}
-          ${PLUGIN_BUILD_DIR}/[!.]*)
+          RELATIVE ${plugin_build_dir}
+          ${plugin_build_dir}/[!.]*)
 
     # Scan the plugin dir and add all features.
     foreach (feature ${PLUGINS})
@@ -56,8 +56,8 @@ macro (collect_update_site_includes output)
 
         if (NOT "${is_feature}" STREQUAL "") # Found feature to be included.
 
-            if (NOT EXISTS ${PLUGIN_BUILD_DIR}/${feature}/feature.xml)
-                message (FATAL_ERROR "Could not find feature.xml in ${PLUGIN_BUILD_DIR}/${feature}. Is the feature configured correctly?")
+            if (NOT EXISTS ${plugin_build_dir}/${feature}/feature.xml)
+                message (FATAL_ERROR "Could not find feature.xml in ${plugin_build_dir}/${feature}. Is the feature configured correctly?")
             endif ()
             update_site_add_feature(${output} ${feature})
         endif ()  # Register the plugin
@@ -72,23 +72,23 @@ macro (add_update_site name id)
     set (update_site_id "${id}")
 
     # Create a plugin cmake file for the specific target.
-    configure_file(${PLUGIN_CMAKE_DIR}/build_update_site.cmake.in ${PLUGIN_SCRIPT_DIR}/build_update_site_${id}.cmake @ONLY)
+    configure_file(${plugin_cmake_dir}/build_update_site.cmake.in ${plugin_script_dir}/build_update_site_${id}.cmake @ONLY)
 
     get_property (REGISTERED_FEATURES GLOBAL PROPERTY FEATURE_GENERATION_ALL_FEATURES)
 
     # Workspace
     set (buckminster_workspace "${PROJECT_BINARY_DIR}/vendor/workspace")
-    configure_file(${PLUGIN_CMAKE_DIR}/materialize_update_site.cmake.in ${PLUGIN_SCRIPT_DIR}/materialize_update_site_${update_site_id}.cmake @ONLY)
+    configure_file(${plugin_cmake_dir}/materialize_update_site.cmake.in ${plugin_script_dir}/materialize_update_site_${update_site_id}.cmake @ONLY)
 
     #
     add_custom_command(
-        OUTPUT ${PLUGIN_BUILD_DIR}/${id}/feature.xml
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEMPLATE_DIR}/${UPDATE_SITE_TEMPLATE} ${PLUGIN_BUILD_DIR}/${id}
+        OUTPUT ${plugin_build_dir}/${id}/feature.xml
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${template_dir}/${update_site_template} ${plugin_build_dir}/${id}
         # # Rename the fragment directory.
-        # COMMAND ${CMAKE_COMMAND} -E rename ${PLUGIN_BUILD_DIR}/fragment ${PLUGIN_BUILD_DIR}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
+        # COMMAND ${CMAKE_COMMAND} -E rename ${plugin_build_dir}/fragment ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
         # Execute the feature cmake script
-        COMMAND ${CMAKE_COMMAND} -P ${PLUGIN_SCRIPT_DIR}/build_update_site_${id}.cmake
-        COMMAND ${CMAKE_COMMAND} -P ${PLUGIN_SCRIPT_DIR}/materialize_update_site_${update_site_id}.cmake
+        COMMAND ${CMAKE_COMMAND} -P ${plugin_script_dir}/build_update_site_${id}.cmake
+        COMMAND ${CMAKE_COMMAND} -P ${plugin_script_dir}/materialize_update_site_${update_site_id}.cmake
         DEPENDS ${REGISTERED_FEATURES}
         COMMENT "${name}: Configuring update site."
         VERBATIM
@@ -100,7 +100,7 @@ macro (add_update_site name id)
         COMMAND ${buckminster_workspace}/../bucky/buckminster -data . -P buckminster.properties -S commands.txt #NOTE: At the moment we need to execute it twice.
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/site
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${buckminster_workspace}/buckminster.output/${update_site_id}_${UPDATE_SITE_VERSION_MAJOR}.${UPDATE_SITE_VERSION_MINOR}.${UPDATE_SITE_VERSION_PATCH}-eclipse.feature/site.p2 ${PROJECT_BINARY_DIR}/site
-        DEPENDS ${PLUGIN_BUILD_DIR}/${id}/feature.xml
+        DEPENDS ${plugin_build_dir}/${id}/feature.xml
                 director_project-build
         WORKING_DIRECTORY ${buckminster_workspace}
         COMMENT "${name}: Building update site."
