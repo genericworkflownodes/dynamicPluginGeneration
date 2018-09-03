@@ -213,6 +213,19 @@ macro (add_plugin plugin_name)
                 APPEND
                 VERBATIM)
 
+            # Copy the lib directory for the plugin to the lib path of the specific fragment.
+            if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${platform}/lib)
+                add_custom_command(
+                    OUTPUT ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}/plugin.xml
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/${platform}/lib ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}/payload/lib
+                    DEPENDS ${plugin_script_dir}/build_plugin_fragment_${target}_${osgi_os}_${osgi_arch}.cmake
+                            ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
+                    COMMENT "${target}-${platform}: Copying lib files to fragment"
+                    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                    APPEND
+                    VERBATIM)
+            endif ()
+
             # Copy the ctd and the binary to the payload direcory of the fragment.
             foreach (bin ${${target}_${platform}})
 

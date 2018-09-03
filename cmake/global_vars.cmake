@@ -75,3 +75,5 @@ macro (add_subdirectories)
     endforeach ()
     unset (ENTRIES)
 endmacro ()
+
+set(PLUGIN_KNIME_VERSION "3.6.0" CACHE STRING "The KNIME version to build the plugins for.")

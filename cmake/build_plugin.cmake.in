@@ -42,6 +42,7 @@ set (PLUGIN_NAME "@target@")
 set (PLUGIN_ID "@PLUGIN_DOMAIN@.@target@")
 set (PLUGIN_ICON "console_view.png")
 set (PLUGIN_MIME_TYPES "@mimetype_xml@")
+set (PLUGIN_KNIME_VERSION "@PLUGIN_KNIME_VERSION@")
 
 # Configure .project
 configure_file(${PLUGIN_DIR}/.project
