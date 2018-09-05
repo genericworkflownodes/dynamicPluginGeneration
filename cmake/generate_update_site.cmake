@@ -45,22 +45,24 @@ macro (collect_update_site_includes output)
 
     set (${output} "")
 
-    file (GLOB PLUGINS
+    file (GLOB_RECURSE FEATURES
           RELATIVE ${plugin_build_dir}
-          ${plugin_build_dir}/[!.]*)
+          ${plugin_build_dir}/feature.xml)
 
     # Scan the plugin dir and add all features.
-    foreach (feature ${PLUGINS})
-        message (STATUS "Add feature ${feature}" )
-        string (REGEX MATCH ".feature" is_feature "${feature}")
+    foreach (feature ${FEATURES})
+        message (STATUS "Add feature ${feature}")
+        # string (REGEX MATCH ".feature" is_feature "${feature}")
+        #
+        # if (NOT "${is_feature}" STREQUAL "") # Found feature to be included.
+        #
+        #     if (NOT EXISTS ${plugin_build_dir}/${feature}/feature.xml)
+        #         message (FATAL_ERROR "Could not find feature.xml in ${plugin_build_dir}/${feature}. Is the feature configured correctly?")
+        #     endif ()
+        #     update_site_add_feature(${output} ${feature})
+        # endif ()  # Register the plugin
 
-        if (NOT "${is_feature}" STREQUAL "") # Found feature to be included.
-
-            if (NOT EXISTS ${plugin_build_dir}/${feature}/feature.xml)
-                message (FATAL_ERROR "Could not find feature.xml in ${plugin_build_dir}/${feature}. Is the feature configured correctly?")
-            endif ()
-            update_site_add_feature(${output} ${feature})
-        endif ()  # Register the plugin
+        update_site_add_feature(${output} ${feature})
     endforeach ()
 endmacro (collect_update_site_includes)
 
@@ -70,7 +72,7 @@ macro (add_update_site name id)
 
     set (update_site_label "${name}")
     set (update_site_id "${id}")
-
+    
     # Create a plugin cmake file for the specific target.
     configure_file(${plugin_cmake_dir}/build_update_site.cmake.in ${plugin_script_dir}/build_update_site_${id}.cmake @ONLY)
 
@@ -84,8 +86,6 @@ macro (add_update_site name id)
     add_custom_command(
         OUTPUT ${plugin_build_dir}/${id}/feature.xml
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${template_dir}/${update_site_template} ${plugin_build_dir}/${id}
-        # # Rename the fragment directory.
-        # COMMAND ${CMAKE_COMMAND} -E rename ${plugin_build_dir}/fragment ${plugin_build_dir}/${PLUGIN_DOMAIN}.${target}.${osgi_os}.${osgi_arch}
         # Execute the feature cmake script
         COMMAND ${CMAKE_COMMAND} -P ${plugin_script_dir}/build_update_site_${id}.cmake
         COMMAND ${CMAKE_COMMAND} -P ${plugin_script_dir}/materialize_update_site_${update_site_id}.cmake
@@ -101,7 +101,7 @@ macro (add_update_site name id)
         COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/site
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${buckminster_workspace}/buckminster.output/${update_site_id}_${UPDATE_SITE_VERSION_MAJOR}.${UPDATE_SITE_VERSION_MINOR}.${UPDATE_SITE_VERSION_PATCH}-eclipse.feature/site.p2 ${PROJECT_BINARY_DIR}/site
         DEPENDS ${plugin_build_dir}/${id}/feature.xml
-                director_project-build
+               director_project-build
         WORKING_DIRECTORY ${buckminster_workspace}
         COMMENT "${name}: Building update site."
         VERBATIM

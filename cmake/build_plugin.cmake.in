@@ -43,6 +43,12 @@ set (PLUGIN_ID "@PLUGIN_DOMAIN@.@target@")
 set (PLUGIN_ICON "console_view.png")
 set (PLUGIN_MIME_TYPES "@mimetype_xml@")
 set (PLUGIN_KNIME_VERSION "@PLUGIN_KNIME_VERSION@")
+set (PLUGIN_DEPENDENCY "@PLUGIN_DEPENDENCY@")
+set (PLUGIN_EXECUTOR "@PLUGIN_EXECUTOR@")
+
+if (NOT "${PLUGIN_DEPENDENCY}" STREQUAL "")
+    set (PLUGIN_DEPENDENCY ", ${PLUGIN_DEPENDENCY}")
+endif()
 
 # Configure .project
 configure_file(${PLUGIN_DIR}/.project
@@ -63,6 +69,10 @@ configure_file(${PLUGIN_DIR}/src/${PLUGIN_SRC_BASE_DIR}/${PLUGIN_NAME}/Generated
 # Configure GeneratedNodeSetFactory
 configure_file(${PLUGIN_DIR}/src/${PLUGIN_SRC_BASE_DIR}/${PLUGIN_NAME}/GeneratedNodeSetFactory.java
                ${PLUGIN_DIR}/src/${PLUGIN_SRC_BASE_DIR}/${PLUGIN_NAME}/GeneratedNodeSetFactory.java @ONLY)
+
+# Configure plugin.project
+configure_file(${PLUGIN_DIR}/src/${PLUGIN_SRC_BASE_DIR}/${PLUGIN_NAME}/plugin.properties
+               ${PLUGIN_DIR}/src/${PLUGIN_SRC_BASE_DIR}/${PLUGIN_NAME}/plugin.properties @ONLY)
 
 # Configure plugin.xml
 configure_file(${PLUGIN_DIR}/plugin.xml

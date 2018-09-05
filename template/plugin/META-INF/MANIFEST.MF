@@ -12,6 +12,7 @@ Require-Bundle: com.genericworkflownodes.knime;bundle-version="0.8.100",
  org.knime.base.filehandling;bundle-version="@PLUGIN_KNIME_VERSION@",
  org.eclipse.ui;bundle-version="3.109.0",
  org.knime.workbench.repository;bundle-version="@PLUGIN_KNIME_VERSION@"
+ @PLUGIN_DEPENDENCY@
 Bundle-Activator: @PLUGIN_DOMAIN@.@PLUGIN_NAME@.GeneratedNodeBundleActivator
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: @PLUGIN_DOMAIN@.@PLUGIN_NAME@
