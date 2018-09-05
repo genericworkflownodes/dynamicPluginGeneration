@@ -38,6 +38,20 @@ set (OSGI_ARCH "@osgi_arch@")
 set (OSGI_OS "@osgi_os@")
 set (P2INF "@p2inf@")
 
+set (plugin_payload_source "@plugin_payload_source@")
+set (dll_dir "@PLUGIN_DLL_HOST@")
+
+if ("${dll_dir}" STREQUAL "")
+    set (dll_dir "${FRAGMENT_DIR}/payload/lib/")
+else ()
+    set (dll_dir "@plugin_build_dir@/${dll_dir}.@osgi_os@.@osgi_arch@/payload/lib/")
+endif ()
+
+message (STATUS "The dll_dir: ${dll_dir}")
+if (EXISTS ${plugin_payload_source}/lib)
+    file (COPY ${plugin_payload_source}/lib/ DESTINATION ${dll_dir})
+endif ()
+
 # Configure Manifest
 configure_file(${FRAGMENT_DIR}/META-INF/MANIFEST.MF
                ${FRAGMENT_DIR}/META-INF/MANIFEST.MF @ONLY)

@@ -9,7 +9,7 @@
           <rm:property key="buckminster.source" value="false"/>
           <rm:property key="buckminster.mutable" value="false"/>
           <!-- Need to replace the knime version to the one specifically built -->
-          <rm:uri format="http://update.knime.org/analytics-platform/3.6/"/>
+          <rm:uri format="http://update.knime.org/analytics-platform/@knime_version_major@.@knime_version_minor@/"/>
         </rm:provider>
         <rm:provider componentTypes="eclipse.feature,osgi.bundle,buckminster" resolutionFilter="(useTrunk=true)" readerType="p2" source="false" mutable="false">
             <rm:property key="buckminster.source" value="false"/>

@@ -42,21 +42,39 @@ set (BUCKMINSTER_OUTPUT_ROOT "@buckminster_workspace@/buckminster.output")
 set (BUCKMINSTER_TARGET_PLATFORM "@buckminster_workspace@/tmp/buckminster.targetPlatform")
 set (BUCKMINSTER_JOB_CQUERY "@buckminster_workspace@/job.cquery")
 
-macro (add_rmap_item locator search_path component_base)
+STRING(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+" "\\1" knime_version_major "@PLUGIN_KNIME_VERSION@")
+STRING(REGEX REPLACE "^[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" knime_version_minor "@PLUGIN_KNIME_VERSION@")
 
-    string(REGEX REPLACE "\\." "\\\\." locator_pattern "${component_base}")
-    string(REGEX MATCH "\\.[a-zA-Z0-9_]+\\.$" locator_id "${component_base}")
-    string(REGEX REPLACE "\\." "" locator_id "${locator_id}")
+# Creates locator search paths for the resource map based
+# on the directory and the id for the given component.
+#
+# \param[out] locator - the rm:locator pattern definition to map the search path to the given component
+# \param[out] search_path - the search path generated for the locator pattern
+# \param[in]  sub_dir - the relative path of the component to the plugin build direcotry
+# \param[in]  component_id - the name of the componentn to generate the search path for.
+#
+macro (add_rmap_item locator search_path sub_dir component_id)
+
+    string(REGEX REPLACE "\\." "\\\\." locator_pattern "${component_id}")
+
+    string(REGEX REPLACE "\\." "_" locator_id "${component_id}")
+    set (locator_id "${locator_id}")
+
+    set (locator_uri "nodes")
+    if (NOT "${sub_dir}" STREQUAL "")
+        set (locator_uri "${locator_uri}/${sub_dir}")
+        set (locator_id "${sub_dir}_${locator_id}")
+    endif()
 
     string (APPEND ${locator}
-        "    <rm:locator pattern=\"^${locator_pattern}.+\" searchPathRef=\"${locator_id}\"/>\n"
+        "    <rm:locator pattern=\"^${locator_pattern}.*\" searchPathRef=\"${locator_id}\"/>\n"
      )
 
     string( APPEND ${search_path}
         "    <rm:searchPath name=\"${locator_id}\">\n"
             "        <rm:provider componentTypes=\"buckminster,osgi.bundle,eclipse.feature\" readerType=\"local\" mutable=\"false\">\n"
                 "            <rm:property key=\"buckminster.mutable\" value=\"false\"/>\n"
-                "            <rm:uri format=\"file:///{0}/nodes/{1}/\">\n"
+                "            <rm:uri format=\"file:///{0}/${locator_uri}/{1}/\">\n"
                     "                <bc:propertyRef key=\"workspace.root\"/>\n"
                     "                <bc:propertyRef key=\"buckminster.component\"/>\n"
                 "            </rm:uri>\n"
@@ -64,6 +82,9 @@ macro (add_rmap_item locator search_path component_base)
         "    </rm:searchPath>\n"
     )
 
+    unset (locator_uri)
+    unset (locator_pattern)
+    unset (locator_id)
 endmacro (add_rmap_item)
 
 macro (collect_rmap_items locator search_path)
@@ -71,24 +92,38 @@ macro (collect_rmap_items locator search_path)
     set (${locator} "")
     set (${search_path} "")
 
-    file (GLOB NODES
+    # Scan the repository for every plugin.xml/feature.xml
+
+    file (GLOB_RECURSE FEATURES
           RELATIVE ${BUCKMINSTER_NODE_DIR}
-          ${BUCKMINSTER_NODE_DIR}/[!.]*)
+          ${BUCKMINSTER_NODE_DIR}/*feature.xml)
 
-    # Scan the plugin dir and add all features.
-    foreach (node ${NODES})
-        string (REGEX MATCH ".feature" is_feature "${node}")
+    set (components "${FEATURES}")
 
-        if (NOT "${is_feature}" STREQUAL "") # Found feature to be included.
+    file (GLOB_RECURSE PLUGINS
+          RELATIVE ${BUCKMINSTER_NODE_DIR}
+          ${BUCKMINSTER_NODE_DIR}/*plugin.xml)
 
-            if (NOT EXISTS ${BUCKMINSTER_NODE_DIR}/${node}/feature.xml)
-                message (FATAL_ERROR "Could not find feature.xml in ${BUCKMINSTER_NODE_DIR}/${node}. Is the feature configured correctly?")
-            endif ()
+    list (APPEND components "${PLUGINS}")
 
-            string(REGEX REPLACE "feature" "" component_base "${node}")
+    # Scan the plugin dir and add all features to the resource map.
+    foreach (component ${components})
 
-            add_rmap_item(${locator} ${search_path} ${component_base})
-        endif ()  # Register the plugin
+        get_filename_component (component_dir "${component}" DIRECTORY)
+
+        get_filename_component (component_name "${component_dir}" NAME)
+        get_filename_component (component_dir "${component_dir}" DIRECTORY)
+
+        add_rmap_item (${locator} ${search_path} "${component_dir}" "${component_name}")
+
+        # string (FIND "${feature_dir}" ".feature" is_feature REVERSE)
+        #
+        # if (NOT "${is_feature}" STREQUAL "-1") # Found feature to be included.
+        #
+        #     message (STATUS "Add rmap for feature: ${feature_dir}")
+        #     string(REGEX REPLACE "feature" "" component_base "${feature_dir}")
+        #     add_rmap_item(${locator} ${search_path} ${component_base})
+        # endif ()  # Register the plugin
     endforeach ()
 endmacro (collect_rmap_items)
 
