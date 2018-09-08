@@ -86,6 +86,7 @@ macro (add_plugin plugin_name)
 
         # First extract the mimetypes from the plugin.
         read_mimetypes(${CMAKE_CURRENT_SOURCE_DIR}/mime.types mimetype_xml)
+        # message (STATUS "${mimetype_xml}")
 
         string (REPLACE "." "/" plugin_src_domain ${PLUGIN_DOMAIN})
         message (STATUS "plugin_src_domain: ${plugin_src_domain}")

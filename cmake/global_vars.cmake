@@ -76,9 +76,14 @@ macro (add_subdirectories)
     unset (ENTRIES)
 endmacro ()
 
+# Set the KNIME target platform to build the plug-ins for.
 set(PLUGIN_KNIME_VERSION "3.6.0" CACHE STRING "The KNIME version to build the plugins for.")
+
 # Set the plugin dependency
 set(PLUGIN_DEPENDENCY "" CACHE INTERNAL "Adds dependecies to a generated GKN plugin" FORCE)
 
 # Set the plugin executor
-set(PLUGIN_EXECUTOR "LocalToolExecutor" CACHE INTERNAL "Sets the tool executor for the plugin" FORCE)
+set (PLUGIN_EXECUTOR "LocalToolExecutor" CACHE INTERNAL "Sets the tool executor for the plugin" FORCE)
+
+# Set the plugin display layer for plug-in versions.
+set (PLUGIN_VERSION_DISPLAY_LAYER "" CACHE INTERNAL "Sets the version display layer for the plugin" FORCE)

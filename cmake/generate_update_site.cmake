@@ -72,7 +72,7 @@ macro (add_update_site name id)
 
     set (update_site_label "${name}")
     set (update_site_id "${id}")
-    
+
     # Create a plugin cmake file for the specific target.
     configure_file(${plugin_cmake_dir}/build_update_site.cmake.in ${plugin_script_dir}/build_update_site_${id}.cmake @ONLY)
 
